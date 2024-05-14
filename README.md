@@ -13,6 +13,10 @@ queries for checking permissions. This service relies on the presence of the
 checks for existing sessions after a log in via the [Vendor Login
 Service](https://github.com/lblod/vendor-login-service).
 
+Alternatively, one can also authenticate using Basic authentication.
+In that case the alternative isBasicAuthorized function in the `filter.js`
+config is used.
+
 > [!CAUTION]
 > This is a very shallow check on authorization and will only return whether a user can access the ldes feed, yes or no. This is a stark contrast with what mu-authorization offers on the database level. In a perfect world, the LDES service would also offer such deep nesting so multiple users can consume the same LDES feed but only see the data they have access to depending on their roles. This isn't something easy to do, so as an in-between solution, this service was created. Do NOT see this as a permanent thing.
 
@@ -53,6 +57,9 @@ use to verify authorization of the current client. The function should return a
 truthy value to indicate the client is authorized to access a service,
 or a falsy value to indicate it is not allowed to.
 
+To allow basic authentication, build a query that uses the user, key and
+possibly the request being passed in.
+
 Note that you also receive the request in the filter function so you can have
 different restrictions based on the path of the service being accessed.
 
@@ -62,6 +69,11 @@ might, e.g., look like the following:
 ```javascript
 import * as mu from 'mu';
 import * as mas from '@lblod/mu-auth-sudo';
+
+export async function isBasicAuthorized(user, key, _req) {
+  // never allow basic authentication, force mu-auth login
+  return false;
+}
 
 export async function isAuthorized(sessionUri, _req) {
   const checkSessionQuery = `
