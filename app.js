@@ -44,6 +44,15 @@ async function ensureAuthorized(session, req) {
 }
 
 async function ensureBasicAuthorized(key, req){
-    const [username, password] = Buffer.from(key, 'base64').toString().split(':');
-    return isBasicAuthorized(username, password, req);
+    const parts = Buffer.from(key, 'base64').toString().split(':');
+    const password = parts.pop();
+    const username = parts.join(':');
+    const isAuth = await isBasicAuthorized(username, password, req);
+    if(!isAuth){
+      const err = new Error(
+          'This session is not authorized to execute this request',
+      );
+      err.status = 403;
+      throw err;
+    }
 }
